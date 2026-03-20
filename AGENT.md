@@ -1,31 +1,41 @@
-# Project Agent Guide (Single Source of Truth)
+# Project Quick Guide
 
-## Golden Rule
-All product/tech decisions must be written into `docs/SPEC.md` first.
-If any plan/code conflicts with SPEC, SPEC wins.
+This file is a short human-readable guide for the project owner.
 
-## MVP Focus
-Ship a usable product fast. Prefer simple, reliable solutions over premature optimization.
+For full project rules and AI tool behavior, use:
 
-## Stack (MVP)
-- Backend: Go + Fiber
-- DB: PostgreSQL
-- Ephemeral state/rate-limit: Redis
-- Frontend: Next.js (for SEO + share previews)
+- `AGENTS.md`
+- `docs/SPEC.md`
+- `docs/API.md`
+- `docs/DB.md`
+- `docs/REDIS.md`
+- `docs/TASKS.md`
 
-## Default Survey Lifecycle
-- Voting: 24h
-- Results-only: 24h
-- Expire (retention end): 48h (delete ephemeral state; keep only global stats later)
+## What this project is
 
-## Voting & Access (MVP)
+PulsePoll is an MVP survey platform.
+
+## Core product direction
+
 - Registered users can create surveys.
 - Guests cannot create surveys.
-- Guests may vote **only if** they accept the “service-required cookie” (guest_id).
-- If cookie not accepted: guests can browse feed, view surveys and results, but cannot vote or change vote.
-- Closed surveys may require a PIN to vote; results are visible to link-holders when results are allowed by phase.
+- Guests may vote only after accepting the required service cookie (`guest_id`).
+- Guests may still browse surveys and view allowed results without accepting that cookie.
 
-## Data Policy (MVP)
-- Postgres stores surveys/options + aggregated counts only.
-- Redis stores vote receipts (for limits + one-time change) and PIN verification state with TTL.
-- No raw vote event log in MVP.
+## Main stack
+
+- Backend: Go + Fiber
+- Database: PostgreSQL
+- Ephemeral state / rate limits: Redis
+- Frontend: Next.js
+
+## Important rule
+
+If a product or technical rule changes, update `docs/SPEC.md` first.
+
+## Notes
+
+- Keep the MVP small.
+- Prefer simple and reliable solutions.
+- Do not treat this file as the source of truth.
+- The main working rules for AI tools are in `AGENTS.md`.
