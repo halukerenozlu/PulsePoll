@@ -11,6 +11,7 @@ type Config struct {
 	App      AppConfig
 	Postgres PostgresConfig
 	Redis    RedisConfig
+	Auth     AuthConfig
 }
 
 type AppConfig struct {
@@ -30,6 +31,14 @@ type RedisConfig struct {
 	Addr     string
 	Password string
 	DB       int
+}
+
+type AuthConfig struct {
+	JWTSecret           string
+	AccessTokenTTLMin   int
+	RefreshTokenTTLHour int
+	RefreshCookieName   string
+	RefreshCookieSecure bool
 }
 
 func Load() Config {
@@ -52,6 +61,13 @@ func Load() Config {
 			Password: getEnv("REDIS_PASSWORD", ""),
 			DB:       getEnvAsInt("REDIS_DB", 0),
 		},
+		Auth: AuthConfig{
+			JWTSecret:           getEnv("AUTH_JWT_SECRET", "change-me-in-production"),
+			AccessTokenTTLMin:   getEnvAsInt("AUTH_ACCESS_TOKEN_TTL_MIN", 15),
+			RefreshTokenTTLHour: getEnvAsInt("AUTH_REFRESH_TOKEN_TTL_HOUR", 24),
+			RefreshCookieName:   getEnv("AUTH_REFRESH_COOKIE_NAME", "refresh_token"),
+			RefreshCookieSecure: getEnvAsBool("AUTH_REFRESH_COOKIE_SECURE", false),
+		},
 	}
 }
 
@@ -69,6 +85,19 @@ func getEnvAsInt(key string, fallback int) int {
 	}
 
 	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return fallback
+	}
+	return parsed
+}
+
+func getEnvAsBool(key string, fallback bool) bool {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+
+	parsed, err := strconv.ParseBool(value)
 	if err != nil {
 		return fallback
 	}

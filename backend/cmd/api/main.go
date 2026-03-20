@@ -8,6 +8,7 @@ import (
 	"PulsePoll/internal/config"
 	postgresinfra "PulsePoll/internal/infrastructure/postgres"
 	redisinfra "PulsePoll/internal/infrastructure/redis"
+	httproutes "PulsePoll/internal/transport/http/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
@@ -51,6 +52,8 @@ func main() {
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowCredentials: true,
 	}))
+
+	httproutes.RegisterAuthRoutes(app, db, cfg.Auth)
 
 	app.Get("/health", func(c *fiber.Ctx) error {
 		healthCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
