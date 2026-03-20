@@ -57,6 +57,7 @@ func main() {
 	httproutes.RegisterConsentRoutes(app)
 	httproutes.RegisterSurveyRoutes(app, db, cfg.Auth.JWTSecret)
 	httproutes.RegisterVoteRoutes(app, db, redisClient, cfg.Auth.JWTSecret)
+	httproutes.RegisterResultsReportRoutes(app, db, cfg.Auth.JWTSecret)
 
 	app.Get("/health", func(c *fiber.Ctx) error {
 		healthCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
