@@ -8,6 +8,7 @@ import (
 	surveydomain "PulsePoll/internal/domain/survey"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -54,6 +55,7 @@ type createSurveyRequest struct {
 	Description         string     `json:"description"`
 	Options             []string   `json:"options"`
 	Visibility          string     `json:"visibility"`
+	AccessPIN           string     `json:"access_pin"`
 	ResultsMode         string     `json:"results_mode"`
 	MaxVotesPerUser     int        `json:"max_votes_per_user"`
 	AllowVoteChangeOnce bool       `json:"allow_vote_change_once"`
@@ -132,6 +134,7 @@ func (h *surveyHandler) createSurvey(c *fiber.Ctx) error {
 	req.Title = strings.TrimSpace(req.Title)
 	req.Description = strings.TrimSpace(req.Description)
 	req.Visibility = strings.TrimSpace(req.Visibility)
+	req.AccessPIN = strings.TrimSpace(req.AccessPIN)
 	req.ResultsMode = strings.TrimSpace(req.ResultsMode)
 
 	if req.Title == "" {
@@ -152,6 +155,9 @@ func (h *surveyHandler) createSurvey(c *fiber.Ctx) error {
 	case "open_live", "closed_hidden_until_end":
 	default:
 		return writeError(c, fiber.StatusBadRequest, "BAD_REQUEST", "invalid results_mode")
+	}
+	if req.Visibility == "private_pin" && req.AccessPIN == "" {
+		return writeError(c, fiber.StatusBadRequest, "BAD_REQUEST", "access_pin is required for private_pin")
 	}
 
 	if req.MaxVotesPerUser == 0 {
@@ -215,6 +221,14 @@ func (h *surveyHandler) createSurvey(c *fiber.Ctx) error {
 	}
 	if req.Description != "" {
 		record.Description = &req.Description
+	}
+	if req.Visibility == "private_pin" {
+		accessPINHash, err := bcrypt.GenerateFromPassword([]byte(req.AccessPIN), bcrypt.DefaultCost)
+		if err != nil {
+			return writeError(c, fiber.StatusInternalServerError, "INTERNAL_SERVER_ERROR", "failed to hash access pin")
+		}
+		hash := string(accessPINHash)
+		record.AccessPinHash = &hash
 	}
 
 	if err := h.db.Transaction(func(tx *gorm.DB) error {
