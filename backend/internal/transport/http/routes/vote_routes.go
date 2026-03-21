@@ -75,7 +75,12 @@ func RegisterVoteRoutes(app *fiber.App, db *gorm.DB, redisClient *goredis.Client
 }
 
 func (h *voteHandler) verifyPIN(c *fiber.Ctx) error {
-	survey, err := h.getSurveyForVote(c.Params("id"))
+	surveyID, err := requireUUIDPathParam(c, "id")
+	if err != nil {
+		return nil
+	}
+
+	survey, err := h.getSurveyForVote(surveyID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return writeError(c, fiber.StatusNotFound, "NOT_FOUND", "survey not found")
@@ -125,7 +130,12 @@ func (h *voteHandler) verifyPIN(c *fiber.Ctx) error {
 }
 
 func (h *voteHandler) vote(c *fiber.Ctx) error {
-	survey, err := h.getSurveyForVote(c.Params("id"))
+	surveyID, err := requireUUIDPathParam(c, "id")
+	if err != nil {
+		return nil
+	}
+
+	survey, err := h.getSurveyForVote(surveyID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return writeError(c, fiber.StatusNotFound, "NOT_FOUND", "survey not found")
@@ -154,6 +164,9 @@ func (h *voteHandler) vote(c *fiber.Ctx) error {
 	req.PIN = strings.TrimSpace(req.PIN)
 	if req.OptionID == "" {
 		return writeError(c, fiber.StatusBadRequest, "BAD_REQUEST", "option_id is required")
+	}
+	if err := validateUUIDField(c, "option_id", req.OptionID); err != nil {
+		return nil
 	}
 
 	if err := h.ensurePINVerified(c, survey, identity, req.PIN); err != nil {
@@ -200,7 +213,12 @@ func (h *voteHandler) vote(c *fiber.Ctx) error {
 }
 
 func (h *voteHandler) changeVote(c *fiber.Ctx) error {
-	survey, err := h.getSurveyForVote(c.Params("id"))
+	surveyID, err := requireUUIDPathParam(c, "id")
+	if err != nil {
+		return nil
+	}
+
+	survey, err := h.getSurveyForVote(surveyID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return writeError(c, fiber.StatusNotFound, "NOT_FOUND", "survey not found")
@@ -232,6 +250,9 @@ func (h *voteHandler) changeVote(c *fiber.Ctx) error {
 	req.PIN = strings.TrimSpace(req.PIN)
 	if req.NewOptionID == "" {
 		return writeError(c, fiber.StatusBadRequest, "BAD_REQUEST", "new_option_id is required")
+	}
+	if err := validateUUIDField(c, "new_option_id", req.NewOptionID); err != nil {
+		return nil
 	}
 
 	if err := h.ensurePINVerified(c, survey, identity, req.PIN); err != nil {

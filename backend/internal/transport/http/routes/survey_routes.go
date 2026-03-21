@@ -254,7 +254,11 @@ func (h *surveyHandler) createSurvey(c *fiber.Ctx) error {
 }
 
 func (h *surveyHandler) getSurvey(c *fiber.Ctx) error {
-	return h.getSurveyByID(c, c.Params("id"), fiber.StatusOK)
+	surveyID, err := requireUUIDPathParam(c, "id")
+	if err != nil {
+		return nil
+	}
+	return h.getSurveyByID(c, surveyID, fiber.StatusOK)
 }
 
 func (h *surveyHandler) getSurveyByID(c *fiber.Ctx, surveyID string, status int) error {
@@ -321,6 +325,14 @@ func (h *surveyHandler) getFeed(c *fiber.Ctx) error {
 	}
 	if sort != "new" {
 		return writeError(c, fiber.StatusBadRequest, "BAD_REQUEST", "only sort=new is supported in MVP")
+	}
+
+	visibility := strings.TrimSpace(strings.ToLower(c.Query("visibility")))
+	if visibility == "" {
+		visibility = "public"
+	}
+	if visibility != "public" {
+		return writeError(c, fiber.StatusBadRequest, "BAD_REQUEST", "only visibility=public is supported in MVP")
 	}
 
 	search := strings.TrimSpace(c.Query("search"))

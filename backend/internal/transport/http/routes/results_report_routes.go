@@ -76,10 +76,13 @@ func RegisterResultsReportRoutes(app *fiber.App, db *gorm.DB, jwtSecret string) 
 }
 
 func (h *resultsReportHandler) getResults(c *fiber.Ctx) error {
-	surveyID := strings.TrimSpace(c.Params("id"))
+	surveyID, err := requireUUIDPathParam(c, "id")
+	if err != nil {
+		return nil
+	}
 
 	var survey surveyResultsModel
-	err := h.db.
+	err = h.db.
 		Preload("Options", func(db *gorm.DB) *gorm.DB {
 			return db.Order("position ASC")
 		}).
@@ -130,7 +133,10 @@ func (h *resultsReportHandler) getResults(c *fiber.Ctx) error {
 }
 
 func (h *resultsReportHandler) createReport(c *fiber.Ctx) error {
-	surveyID := strings.TrimSpace(c.Params("id"))
+	surveyID, err := requireUUIDPathParam(c, "id")
+	if err != nil {
+		return nil
+	}
 
 	var survey surveyIDModel
 	if err := h.db.Where("id = ?", surveyID).First(&survey).Error; err != nil {
