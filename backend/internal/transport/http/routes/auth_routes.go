@@ -63,15 +63,6 @@ type userResponse struct {
 	DisplayName string `json:"display_name"`
 }
 
-type errorEnvelope struct {
-	Error errorBody `json:"error"`
-}
-
-type errorBody struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
 func RegisterAuthRoutes(app *fiber.App, db *gorm.DB, cfg config.AuthConfig) {
 	h := &authHandler{db: db, cfg: cfg}
 
@@ -111,7 +102,7 @@ func (h *authHandler) register(c *fiber.Ctx) error {
 
 	if err := h.db.Create(&newUser).Error; err != nil {
 		if strings.Contains(strings.ToLower(err.Error()), "duplicate key") {
-			return writeError(c, fiber.StatusBadRequest, "BAD_REQUEST", "email already exists")
+			return writeError(c, fiber.StatusConflict, "CONFLICT", "email already exists")
 		}
 		return writeError(c, fiber.StatusInternalServerError, "INTERNAL_SERVER_ERROR", "failed to create user")
 	}
@@ -368,14 +359,5 @@ func clearRefreshCookie(c *fiber.Ctx, cfg config.AuthConfig) {
 		Path:     "/",
 		Expires:  time.Unix(0, 0),
 		MaxAge:   -1,
-	})
-}
-
-func writeError(c *fiber.Ctx, status int, code, message string) error {
-	return c.Status(status).JSON(errorEnvelope{
-		Error: errorBody{
-			Code:    code,
-			Message: message,
-		},
 	})
 }

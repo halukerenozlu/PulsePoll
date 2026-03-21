@@ -14,15 +14,6 @@ const (
 	guestIDTTL        = 48 * time.Hour
 )
 
-type consentErrorEnvelope struct {
-	Error consentErrorBody `json:"error"`
-}
-
-type consentErrorBody struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
 func RegisterConsentRoutes(app *fiber.App) {
 	api := app.Group("/api/v1")
 	consent := api.Group("/consent")
@@ -36,12 +27,7 @@ func RequireGuestConsentForGuest() fiber.Handler {
 		}
 
 		if c.Cookies(guestIDCookieName) == "" {
-			return c.Status(fiber.StatusForbidden).JSON(consentErrorEnvelope{
-				Error: consentErrorBody{
-					Code:    "CONSENT_REQUIRED",
-					Message: "guest voting requires consent cookie",
-				},
-			})
+			return writeError(c, fiber.StatusForbidden, "CONSENT_REQUIRED", "guest voting requires consent cookie")
 		}
 
 		return c.Next()
@@ -51,12 +37,7 @@ func RequireGuestConsentForGuest() fiber.Handler {
 func acceptConsent(c *fiber.Ctx) error {
 	guestID, err := newGuestID()
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(consentErrorEnvelope{
-			Error: consentErrorBody{
-				Code:    "INTERNAL_SERVER_ERROR",
-				Message: "failed to generate guest id",
-			},
-		})
+		return writeError(c, fiber.StatusInternalServerError, "INTERNAL_SERVER_ERROR", "failed to generate guest id")
 	}
 
 	c.Cookie(&fiber.Cookie{

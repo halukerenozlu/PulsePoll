@@ -42,7 +42,9 @@ func main() {
 		}
 	}()
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		ErrorHandler: httproutes.ErrorHandler(),
+	})
 
 	// CORS (Cross-Origin Resource Sharing / Çapraz Kaynak Paylaşımı)
 	// Frontend: http://localhost:3000  -> Backend: http://localhost:8080

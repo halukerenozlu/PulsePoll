@@ -61,11 +61,6 @@ type voterIdentity struct {
 	IsGuest bool
 }
 
-// errResponseSent signals that an HTTP error response has already been written
-// to the client. Callers must return nil (not this error) so Fiber sends the
-// buffered response instead of invoking its error handler.
-var errResponseSent = errors.New("response already sent")
-
 func RegisterVoteRoutes(app *fiber.App, db *gorm.DB, redisClient *goredis.Client, jwtSecret string) {
 	h := &voteHandler{
 		db:        db,
@@ -185,11 +180,11 @@ func (h *voteHandler) vote(c *fiber.Ctx) error {
 			return res.Error
 		}
 		if res.RowsAffected == 0 {
-			return errors.New("option not found")
+			return errOptionNotFound
 		}
 		return nil
 	}); err != nil {
-		if strings.Contains(err.Error(), "option not found") {
+		if errors.Is(err, errOptionNotFound) {
 			return writeError(c, fiber.StatusBadRequest, "BAD_REQUEST", "invalid option_id")
 		}
 		return writeError(c, fiber.StatusInternalServerError, "INTERNAL_SERVER_ERROR", "failed to record vote")
@@ -266,7 +261,7 @@ func (h *voteHandler) changeVote(c *fiber.Ctx) error {
 			return prevRes.Error
 		}
 		if prevRes.RowsAffected == 0 {
-			return errors.New("previous option not found")
+			return errPreviousOptionNotFound
 		}
 
 		newRes := tx.Model(&optionDB{}).
@@ -276,15 +271,15 @@ func (h *voteHandler) changeVote(c *fiber.Ctx) error {
 			return newRes.Error
 		}
 		if newRes.RowsAffected == 0 {
-			return errors.New("new option not found")
+			return errNewOptionNotFound
 		}
 
 		return nil
 	}); err != nil {
-		if strings.Contains(err.Error(), "new option not found") {
+		if errors.Is(err, errNewOptionNotFound) {
 			return writeError(c, fiber.StatusBadRequest, "BAD_REQUEST", "invalid new_option_id")
 		}
-		if strings.Contains(err.Error(), "previous option not found") {
+		if errors.Is(err, errPreviousOptionNotFound) {
 			return writeError(c, fiber.StatusForbidden, "VOTE_CHANGE_NOT_ALLOWED", "vote change not allowed")
 		}
 		return writeError(c, fiber.StatusInternalServerError, "INTERNAL_SERVER_ERROR", "failed to change vote")
