@@ -76,36 +76,11 @@ func main() {
 	httproutes.RegisterSurveyRoutes(app, db, cfg.Auth.JWTSecret)
 	httproutes.RegisterVoteRoutes(app, db, redisClient, cfg.Auth.JWTSecret)
 	httproutes.RegisterResultsReportRoutes(app, db, cfg.Auth.JWTSecret)
-
-	app.Get("/health", func(c *fiber.Ctx) error {
-		healthCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		defer cancel()
-
-		postgresOK := sqlDB.PingContext(healthCtx) == nil
-		redisOK := redisClient.Ping(healthCtx).Err() == nil
-
-		if postgresOK && redisOK {
-			return c.JSON(fiber.Map{
-				"ok":    true,
-				"redis": "up",
-				"db":    "up",
-			})
-		}
-
-		status := fiber.Map{
-			"ok":    false,
-			"redis": "down",
-			"db":    "down",
-		}
-		if redisOK {
-			status["redis"] = "up"
-		}
-		if postgresOK {
-			status["db"] = "up"
-		}
-
-		return c.Status(fiber.StatusServiceUnavailable).JSON(status)
-	})
+	registerHealthRoute(
+		app,
+		func(ctx context.Context) error { return sqlDB.PingContext(ctx) },
+		func(ctx context.Context) error { return redisClient.Ping(ctx).Err() },
+	)
 
 	address := ":" + cfg.App.Port
 	log.Printf("startup complete; API listening on %s", address)
