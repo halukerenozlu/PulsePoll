@@ -30,6 +30,10 @@ var (
 	errNewOptionNotFound      = errors.New("new option not found")
 )
 
+func isResponseSent(err error) bool {
+	return errors.Is(err, errResponseSent)
+}
+
 // ErrorHandler returns a Fiber error handler that produces the standard
 // error envelope for any unhandled error returned from a handler.
 func ErrorHandler() fiber.ErrorHandler {

@@ -256,7 +256,10 @@ func (h *surveyHandler) createSurvey(c *fiber.Ctx) error {
 func (h *surveyHandler) getSurvey(c *fiber.Ctx) error {
 	surveyID, err := requireUUIDPathParam(c, "id")
 	if err != nil {
-		return nil
+		if isResponseSent(err) {
+			return nil
+		}
+		return err
 	}
 	return h.getSurveyByID(c, surveyID, fiber.StatusOK)
 }

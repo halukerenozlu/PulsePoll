@@ -77,7 +77,10 @@ func RegisterVoteRoutes(app *fiber.App, db *gorm.DB, redisClient *goredis.Client
 func (h *voteHandler) verifyPIN(c *fiber.Ctx) error {
 	surveyID, err := requireUUIDPathParam(c, "id")
 	if err != nil {
-		return nil
+		if isResponseSent(err) {
+			return nil
+		}
+		return err
 	}
 
 	survey, err := h.getSurveyForVote(surveyID)
@@ -95,9 +98,9 @@ func (h *voteHandler) verifyPIN(c *fiber.Ctx) error {
 		return writeError(c, fiber.StatusInternalServerError, "INTERNAL_SERVER_ERROR", "survey pin is not configured")
 	}
 
-	identity, err := h.resolveIdentityForPIN(c)
+	identity, err := h.resolveIdentity(c)
 	if err != nil {
-		if errors.Is(err, errResponseSent) {
+		if isResponseSent(err) {
 			return nil
 		}
 		return err
@@ -132,7 +135,10 @@ func (h *voteHandler) verifyPIN(c *fiber.Ctx) error {
 func (h *voteHandler) vote(c *fiber.Ctx) error {
 	surveyID, err := requireUUIDPathParam(c, "id")
 	if err != nil {
-		return nil
+		if isResponseSent(err) {
+			return nil
+		}
+		return err
 	}
 
 	survey, err := h.getSurveyForVote(surveyID)
@@ -148,9 +154,9 @@ func (h *voteHandler) vote(c *fiber.Ctx) error {
 		return writeError(c, fiber.StatusForbidden, "PHASE_NOT_VOTING", "voting not allowed in this phase")
 	}
 
-	identity, err := h.resolveIdentityForVote(c)
+	identity, err := h.resolveIdentity(c)
 	if err != nil {
-		if errors.Is(err, errResponseSent) {
+		if isResponseSent(err) {
 			return nil
 		}
 		return err
@@ -166,11 +172,14 @@ func (h *voteHandler) vote(c *fiber.Ctx) error {
 		return writeError(c, fiber.StatusBadRequest, "BAD_REQUEST", "option_id is required")
 	}
 	if err := validateUUIDField(c, "option_id", req.OptionID); err != nil {
-		return nil
+		if isResponseSent(err) {
+			return nil
+		}
+		return err
 	}
 
 	if err := h.ensurePINVerified(c, survey, identity, req.PIN); err != nil {
-		if errors.Is(err, errResponseSent) {
+		if isResponseSent(err) {
 			return nil
 		}
 		return err
@@ -215,7 +224,10 @@ func (h *voteHandler) vote(c *fiber.Ctx) error {
 func (h *voteHandler) changeVote(c *fiber.Ctx) error {
 	surveyID, err := requireUUIDPathParam(c, "id")
 	if err != nil {
-		return nil
+		if isResponseSent(err) {
+			return nil
+		}
+		return err
 	}
 
 	survey, err := h.getSurveyForVote(surveyID)
@@ -234,9 +246,9 @@ func (h *voteHandler) changeVote(c *fiber.Ctx) error {
 		return writeError(c, fiber.StatusForbidden, "VOTE_CHANGE_NOT_ALLOWED", "vote change not allowed")
 	}
 
-	identity, err := h.resolveIdentityForVote(c)
+	identity, err := h.resolveIdentity(c)
 	if err != nil {
-		if errors.Is(err, errResponseSent) {
+		if isResponseSent(err) {
 			return nil
 		}
 		return err
@@ -252,11 +264,14 @@ func (h *voteHandler) changeVote(c *fiber.Ctx) error {
 		return writeError(c, fiber.StatusBadRequest, "BAD_REQUEST", "new_option_id is required")
 	}
 	if err := validateUUIDField(c, "new_option_id", req.NewOptionID); err != nil {
-		return nil
+		if isResponseSent(err) {
+			return nil
+		}
+		return err
 	}
 
 	if err := h.ensurePINVerified(c, survey, identity, req.PIN); err != nil {
-		if errors.Is(err, errResponseSent) {
+		if isResponseSent(err) {
 			return nil
 		}
 		return err
@@ -321,23 +336,7 @@ func (h *voteHandler) getSurveyForVote(surveyID string) (surveyVoteModel, error)
 	return survey, err
 }
 
-func (h *voteHandler) resolveIdentityForPIN(c *fiber.Ctx) (voterIdentity, error) {
-	userID, err := h.userIDFromAuthorization(c.Get("Authorization"))
-	if err == nil {
-		return voterIdentity{UserID: userID}, nil
-	}
-
-	guestID := strings.TrimSpace(c.Cookies(guestIDCookieName))
-	if guestID == "" {
-		if err := writeError(c, fiber.StatusForbidden, "CONSENT_REQUIRED", "guest voting requires consent cookie"); err != nil {
-			return voterIdentity{}, err
-		}
-		return voterIdentity{}, errResponseSent
-	}
-	return voterIdentity{GuestID: guestID, IsGuest: true}, nil
-}
-
-func (h *voteHandler) resolveIdentityForVote(c *fiber.Ctx) (voterIdentity, error) {
+func (h *voteHandler) resolveIdentity(c *fiber.Ctx) (voterIdentity, error) {
 	userID, err := h.userIDFromAuthorization(c.Get("Authorization"))
 	if err == nil {
 		return voterIdentity{UserID: userID}, nil

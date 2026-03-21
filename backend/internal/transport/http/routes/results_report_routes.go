@@ -78,7 +78,10 @@ func RegisterResultsReportRoutes(app *fiber.App, db *gorm.DB, jwtSecret string) 
 func (h *resultsReportHandler) getResults(c *fiber.Ctx) error {
 	surveyID, err := requireUUIDPathParam(c, "id")
 	if err != nil {
-		return nil
+		if isResponseSent(err) {
+			return nil
+		}
+		return err
 	}
 
 	var survey surveyResultsModel
@@ -135,7 +138,10 @@ func (h *resultsReportHandler) getResults(c *fiber.Ctx) error {
 func (h *resultsReportHandler) createReport(c *fiber.Ctx) error {
 	surveyID, err := requireUUIDPathParam(c, "id")
 	if err != nil {
-		return nil
+		if isResponseSent(err) {
+			return nil
+		}
+		return err
 	}
 
 	var survey surveyIDModel
