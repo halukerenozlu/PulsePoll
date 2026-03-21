@@ -2,6 +2,7 @@ package routes
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 
@@ -44,6 +45,10 @@ func ErrorHandler() fiber.ErrorHandler {
 }
 
 func writeError(c *fiber.Ctx, status int, code, message string) error {
+	if status >= fiber.StatusInternalServerError {
+		log.Printf("http 5xx response method=%s path=%s status=%d code=%s message=%s", c.Method(), c.Path(), status, code, message)
+	}
+
 	return c.Status(status).JSON(errorEnvelope{
 		Error: errorBody{
 			Code:    code,
