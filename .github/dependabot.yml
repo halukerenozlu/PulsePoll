@@ -10,7 +10,7 @@ updates:
       - "dependencies"
       - "backend"
 
-  - package-ecosystem: "pnpm"
+  - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
       interval: "weekly"
