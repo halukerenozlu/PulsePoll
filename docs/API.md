@@ -41,8 +41,8 @@ GET /surveys/{id}
 - includes computed fields: phase, can_vote, results_visible, requires_pin
 
 GET /feed
-- query: sort=new|trending (MVP: new), visibility=public
-- optional: category, search
+- query: sort=new, visibility=public
+- optional: search
 
 GET /surveys/{id}/results
 - returns counts + percentages if results_visible == true

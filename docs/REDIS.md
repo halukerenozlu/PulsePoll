@@ -26,7 +26,9 @@ TTL: 30 minutes (or until vote_ends_at, whichever is smaller)
 ## PIN brute-force protection
 pinfail:survey:{surveyId}:guest:{guestId} -> integer counter (INCR)
 TTL: 15 minutes
+Note: keep this key contract for PRIVATE_PIN brute-force control. It is enforced when that protection is in scope.
 
 ## Rate limiting (simple)
 rl:ip:{ip}:vote -> integer counter
 TTL: 60 seconds
+Note: this key remains part of MVP for vote endpoint rate limiting.
