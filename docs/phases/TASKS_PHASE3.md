@@ -16,7 +16,7 @@ It is also the phase where backend behavior becomes stable enough for frontend i
   - `docs/SPEC.md`
   - `docs/API.md`
   - `docs/DB.md`
-  - `ROADMAP.md`
+  - `docs/ROADMAP.md`
 - Prefer minimal, reviewable increments.
 - Do not introduce frontend-coupled assumptions into backend logic.
 - Do not defer backend verification until frontend work begins.
@@ -133,7 +133,7 @@ Checklist:
 - [ ] Update `docs/API.md` with final endpoint behavior and examples
 - [ ] Update `docs/DB.md` if schema/constraints/indexes changed
 - [ ] Update any setup or verification documentation if needed
-- [ ] Ensure `ROADMAP.md` still reflects the real project sequence
+- [ ] Ensure `docs/ROADMAP.md` still reflects the real project sequence
 
 ---
 
@@ -192,6 +192,8 @@ When reviewing Phase 3 work, verify the following:
 
 - Is Phase 4 able to proceed without guessing backend behavior?
 
+---
+
 ## Execution Model
 
 Phase 3 is planned and tracked at phase level in this document.
@@ -209,5 +211,5 @@ Each sprint must have a clearly defined:
 
 Recommended structure:
 
-- `TASKS_PHASE3.md` defines the Phase 3 umbrella scope
+- `docs/phases/TASKS_PHASE3.md` defines the Phase 3 umbrella scope
 - sprint documents define the execution details for each implementation step

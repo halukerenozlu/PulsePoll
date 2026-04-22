@@ -47,7 +47,7 @@ Outcome:
 
 ### Phase 3 — Backend Features + Verification
 
-**Status:** Planned
+**Status:** In Progress
 
 Complete the approved Phase 3 backend scope and verify backend behavior without depending on the frontend.
 

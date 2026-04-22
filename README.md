@@ -1,42 +1,144 @@
 # PulsePoll
 
-This repo is a lightweight skeleton. Core contracts live in `docs/`.
+PulsePoll is a lightweight MVP survey platform built with a verification-first workflow.
 
-## Start services
+The project is private and documentation-driven.
+Core product and technical contracts live under `docs/`.
 
-```bash
-docker compose up --build
-```
+---
 
-API health:
+## Current Project Status
 
-- GET http://localhost:8080/health
+- Phase 1 — Completed
+- Phase 2 — Completed
+- Phase 3 — In progress
 
-## Docs (Single Source of Truth)
+Current focus:
+- backend feature work
+- backend verification without frontend
+- API contract readiness for future frontend integration
 
-- docs/SPEC.md
-- docs/API.md
-- docs/DB.md
-- docs/REDIS.md
-- docs/TASKS_CLAUDE.md
+---
 
-# Tech Stack
+## Core Principle
+
+Documentation is the source of truth.
+
+If code, plans, or generated output conflict with project docs, the docs win.
+
+Primary references:
+
+- `docs/SPEC.md`
+- `docs/API.md`
+- `docs/DB.md`
+- `docs/REDIS.md`
+- `docs/verification.md`
+- `docs/ROADMAP.md`
+- `docs/phases/TASKS.md`
+- `docs/phases/TASKS_PHASE2.md`
+- `docs/phases/TASKS_PHASE3.md`
+
+---
+
+## Tech Stack
 
 - Backend: Go + Fiber
-- DB: Postgres
-- Cache/Rate limit/Counter: Redis
-- DB access: GORM + (hot-path) sqlc/raw SQL
-- Migrations: goose/atlas
-- Frontend: Next.js (App Router)
-- Client data: React Query / SWR + services/api.ts
+- Database: PostgreSQL
+- Ephemeral state / rate limiting: Redis
+- Frontend: Next.js
 - Infra: Docker Compose
 
-# Frontend (Next.js) — placeholder
+Additional notes:
+- PostgreSQL stores persistent survey-related data
+- Redis stores temporary voting, PIN, and rate-limit state
+- frontend integration belongs after backend verification is stable enough
 
-Plan: use Next.js (App Router) for SEO + share previews + public feed.
-For now this folder is a placeholder so we don't create lots of files before decisions are finalized.
+---
 
-When ready:
+## Local Development
 
-- `npx create-next-app@latest`
-- keep API calls in a single `src/services/api.ts`
+Start services:
+
+```bash
+docker compose -p pulsepoll up --build
+```
+
+Health check:
+
+- `GET http://localhost:8080/health`
+
+Expected healthy shape:
+
+```json
+{
+  "db": "up",
+  "ok": true,
+  "redis": "up"
+}
+```
+
+---
+
+## Verification
+
+Backend correctness must be verifiable without depending on the frontend.
+
+Use:
+
+- `docs/verification.md`
+
+This document defines:
+- local startup checks
+- health verification
+- endpoint verification expectations
+- failure-path verification
+- persistence verification guidance
+
+---
+
+## Workflow
+
+Default workflow:
+
+1. Human + ChatGPT define scope
+2. Codex implements the approved task
+3. Codex adds or updates tests when behavior changes
+4. Codex runs relevant tests/build checks
+5. Gemini performs first-pass review
+6. Codex applies needed fixes and re-runs checks
+7. Claude performs selective deep review only for higher-risk work
+8. Human decides approval, commit, and tag boundaries
+
+Claude is not required for every task.
+
+---
+
+## Docs Map
+
+### Product and Contracts
+- `docs/SPEC.md`
+- `docs/API.md`
+- `docs/DB.md`
+- `docs/REDIS.md`
+
+### Verification and Planning
+- `docs/verification.md`
+- `docs/ROADMAP.md`
+
+### Phase Execution
+- `docs/phases/TASKS.md`
+- `docs/phases/TASKS_PHASE2.md`
+- `docs/phases/TASKS_PHASE3.md`
+- `docs/phases/phase3/sprints/SPRINT1.md`
+
+---
+
+## Frontend
+
+Frontend work is planned, but backend verification comes first.
+
+Phase 4 will connect the frontend to a backend that is already:
+- implemented
+- documented
+- directly testable without UI
+- stable enough for integration
