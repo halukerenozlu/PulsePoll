@@ -213,3 +213,47 @@ Recommended structure:
 
 - `docs/phases/TASKS_PHASE3.md` defines the Phase 3 umbrella scope
 - sprint documents define the execution details for each implementation step
+
+## Sprint Plan
+
+### Sprint 1 — Verification Foundation
+
+**Status:** Completed
+
+Goal:
+
+- establish the Phase 3 verification baseline
+- make backend verification possible without frontend
+- align Phase 3 planning docs and execution structure
+
+Outcome:
+
+- `docs/verification.md` created/refined
+- `docs/phases/phase3/sprints/SPRINT1.md` created
+- Phase 3 planning and workflow docs aligned for verification-first execution
+
+### Sprint 2 — Vote Rate Limiting
+
+**Status:** Completed
+
+Goal:
+
+- add Redis-backed IP rate limiting for vote endpoints
+- return deterministic `429 TOO_MANY_REQUESTS`
+- keep the change small, testable, and verification-friendly
+
+Expected output:
+
+- rate limiting for:
+  - `POST /surveys/:id/vote`
+  - `PUT /surveys/:id/vote`
+- related tests
+- manual verification steps for allowed vs rate-limited paths
+
+### Future Sprints
+
+Additional Phase 3 sprints will be defined after Sprint 2 review, based on:
+
+- implementation results
+- verification gaps
+- docs/code alignment needs

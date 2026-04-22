@@ -22,6 +22,19 @@ type voteHandler struct {
 	jwtSecret string
 }
 
+const (
+	voteRateLimitTTLSeconds = 60
+	voteRateLimitMaxHits    = 30
+)
+
+var voteRateLimitScript = goredis.NewScript(`
+local current = redis.call("INCR", KEYS[1])
+if current == 1 then
+  redis.call("EXPIRE", KEYS[1], ARGV[1])
+end
+return current
+`)
+
 type voteRequest struct {
 	OptionID string `json:"option_id"`
 	PIN      string `json:"pin"`
@@ -140,6 +153,9 @@ func (h *voteHandler) vote(c *fiber.Ctx) error {
 		}
 		return err
 	}
+	if err := h.enforceVoteRateLimit(c); err != nil {
+		return err
+	}
 
 	survey, err := h.getSurveyForVote(surveyID)
 	if err != nil {
@@ -227,6 +243,9 @@ func (h *voteHandler) changeVote(c *fiber.Ctx) error {
 		if isResponseSent(err) {
 			return nil
 		}
+		return err
+	}
+	if err := h.enforceVoteRateLimit(c); err != nil {
 		return err
 	}
 
@@ -464,6 +483,39 @@ func pinOKKey(surveyID string, identity voterIdentity) string {
 		return fmt.Sprintf("pinok:survey:%s:guest:%s", surveyID, identity.GuestID)
 	}
 	return fmt.Sprintf("pinok:survey:%s:user:%s", surveyID, identity.UserID)
+}
+
+func voteRateLimitKey(ip string) string {
+	return fmt.Sprintf("rl:ip:%s:vote", ip)
+}
+
+func (h *voteHandler) enforceVoteRateLimit(c *fiber.Ctx) error {
+	return enforceVoteRateLimitWithFuncs(
+		c,
+		voteRateLimitKey(c.IP()),
+		voteRateLimitMaxHits,
+		func(ctx context.Context, key string) (int64, error) {
+			ttlSeconds := int64(voteRateLimitTTLSeconds)
+			return voteRateLimitScript.Run(ctx, h.redis, []string{key}, ttlSeconds).Int64()
+		},
+	)
+}
+
+func enforceVoteRateLimitWithFuncs(
+	c *fiber.Ctx,
+	key string,
+	maxHits int64,
+	nextCount func(context.Context, string) (int64, error),
+) error {
+	ctx := context.Background()
+	count, err := nextCount(ctx, key)
+	if err != nil {
+		return writeError(c, fiber.StatusInternalServerError, "INTERNAL_SERVER_ERROR", "failed to enforce rate limit")
+	}
+	if count > maxHits {
+		return writeError(c, fiber.StatusTooManyRequests, "TOO_MANY_REQUESTS", "too many requests")
+	}
+	return nil
 }
 
 func pinOKTTL(now, voteEndsAt time.Time) time.Duration {

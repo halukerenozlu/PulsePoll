@@ -18,7 +18,7 @@ type surveyHandler struct {
 }
 
 type surveyModel struct {
-	ID                  string     `gorm:"column:id"`
+	ID                  string     `gorm:"column:id;type:uuid;default:gen_random_uuid();primaryKey"`
 	CreatorID           string     `gorm:"column:creator_id"`
 	Title               string     `gorm:"column:title"`
 	Description         *string    `gorm:"column:description"`
@@ -40,7 +40,7 @@ type surveyModel struct {
 func (surveyModel) TableName() string { return "surveys" }
 
 type optionDB struct {
-	ID        string    `gorm:"column:id"`
+	ID        string    `gorm:"column:id;type:uuid;default:gen_random_uuid();primaryKey"`
 	SurveyID  string    `gorm:"column:survey_id"`
 	Text      string    `gorm:"column:text"`
 	Position  int       `gorm:"column:position"`
