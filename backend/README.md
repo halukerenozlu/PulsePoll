@@ -3,7 +3,7 @@
 Backend service for the PulsePoll MVP.
 
 This document is backend-technical only.
-Project phase/status tracking lives outside this file and should be treated as authoritative in the project docs.
+Project milestone/status tracking lives outside this file and should be treated as authoritative in the project docs.
 
 ---
 
@@ -20,7 +20,7 @@ This README exists to summarize:
 - backend-specific safety notes
 - backend-specific known limitations
 
-It should **not** be used as a project roadmap, phase tracker, or approval history log.
+It should **not** be used as a project roadmap, milestone tracker, or approval history log.
 
 ---
 
@@ -87,6 +87,7 @@ Use these docs as the primary backend verification references:
 - Product rules: `docs/SPEC.md`
 - DB contract: `docs/DB.md`
 - Redis contract: `docs/REDIS.md`
+- Active planning reference: `docs/VERSION_PLAN.md`
 
 Useful backend test command:
 
@@ -170,5 +171,4 @@ Use these as authoritative:
 - `docs/REDIS.md`
 - `docs/verification.md`
 - `docs/ROADMAP.md`
-- `docs/phases/TASKS.md`
-- `docs/phases/TASKS_PHASE3.md`
+- `docs/VERSION_PLAN.md`
