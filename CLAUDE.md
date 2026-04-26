@@ -1,4 +1,4 @@
-# CLAUDE — Selective Deep Review
+# CLAUDE - Selective Deep Review
 
 Claude is not the default implementer for this project.
 
@@ -16,7 +16,7 @@ Use Claude mainly as a high-value reviewer for changes that are:
 
 Claude reviews the current diff and checks:
 
-- scope control
+- scope alignment with the accepted Version Milestone / Work Item / Implementation Slice
 - alignment with `docs/SPEC.md`
 - alignment with `docs/API.md`
 - alignment with `docs/DB.md`
@@ -51,7 +51,7 @@ Claude reviews the current diff and checks:
 
 When Claude reviews a change, it should check:
 
-1. Is the work limited to the approved task or sprint?
+1. Is the work limited to the approved Version Milestone / Work Item / Implementation Slice?
 2. Does behavior still match `docs/SPEC.md`?
 3. Do API responses and errors still match `docs/API.md`?
 4. Do schema/persistence assumptions still match `docs/DB.md`?
@@ -59,6 +59,7 @@ When Claude reviews a change, it should check:
 6. Was verification appropriate for the risk level?
 7. Were tests added or updated when behavior changed?
 8. If tests were not added, was that justified clearly?
+9. Is the implementation minimal for the risk and scope?
 
 ---
 

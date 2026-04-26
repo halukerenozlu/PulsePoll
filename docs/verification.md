@@ -4,7 +4,7 @@
 
 This document defines how to verify the PulsePoll backend locally without depending on the frontend.
 
-The goal is to make backend behavior testable and repeatable before Phase 4 frontend integration begins.
+The goal is to make backend behavior testable and repeatable before `v0.4.0` frontend integration begins.
 
 ---
 
@@ -14,7 +14,8 @@ The goal is to make backend behavior testable and repeatable before Phase 4 fron
 - Verification should be reproducible by following the same steps each time.
 - Both success paths and failure paths should be checked.
 - Documentation must reflect real behavior, not assumptions.
-- If implementation and docs conflict, `docs/SPEC.md` is the source of truth and related docs must be updated.
+- If implementation and docs conflict, `docs/SPEC.md` is the product behavior source of truth and related docs must be updated.
+- Backend work should map to an explicit Version Milestone, Work Item, and Implementation Slice from `docs/VERSION_PLAN.md`.
 
 ---
 
@@ -29,7 +30,7 @@ This document covers:
 - persistence verification guidance
 - evidence to collect before approving backend work
 
-This document does **not** define product behavior.  
+This document does **not** define product behavior.
 Product behavior belongs in:
 
 - `docs/SPEC.md`
@@ -73,9 +74,9 @@ $BASE_URL = "http://localhost:8080"
 
 ---
 
-## Step 1 — Start Local Services
+## Step 1 - Start Local Services
 
-Start the project using the repo’s local development flow.
+Start the project using the repo's local development flow.
 
 Example:
 
@@ -92,7 +93,7 @@ Expected result:
 
 ---
 
-## Step 2 — Verify Service Health
+## Step 2 - Verify Service Health
 
 ### Request
 
@@ -122,11 +123,11 @@ Expected shape:
 }
 ```
 
-If this fails, stop here and fix environment/startup issues before verifying any Phase 3 work.
+If this fails, stop here and fix environment/startup issues before verifying milestone work.
 
 ---
 
-## Step 3 — Baseline Backend Boot Check
+## Step 3 - Baseline Backend Boot Check
 
 Confirm the backend is stable after startup:
 
@@ -145,9 +146,9 @@ curl -i "$BASE_URL/health"
 
 ---
 
-## Step 4 — Phase 3 Endpoint Verification
+## Step 4 - Milestone Endpoint Verification
 
-Each approved Phase 3 endpoint must be verified directly through HTTP requests.
+Each approved backend Implementation Slice must be verified directly through HTTP requests when it affects endpoint behavior.
 
 For each endpoint, verify:
 
@@ -160,20 +161,28 @@ For each endpoint, verify:
 - status code
 - error shape
 
-Use the checklist below for each endpoint added in Phase 3.
+Use the checklist below for each endpoint added or changed by a Version Milestone.
 
 ---
 
 ## Endpoint Verification Template
 
-Copy this block per endpoint as Phase 3 work progresses.
+Copy this block per endpoint as backend Work Items progress.
+
+### Scope
+
+- Version Milestone:
+- Work Item:
+- Implementation Slice:
 
 ### Endpoint
+
 - Method:
 - Path:
 - Purpose:
 
 ### Success Case
+
 - Request:
 - Expected status:
 - Expected response shape:
@@ -181,20 +190,27 @@ Copy this block per endpoint as Phase 3 work progresses.
 - Notes:
 
 ### Failure Cases
-- Invalid input:
-  - Request:
-  - Expected status:
-  - Expected response shape:
-- Not found:
-  - Request:
-  - Expected status:
-  - Expected response shape:
-- Conflict / edge case:
-  - Request:
-  - Expected status:
-  - Expected response shape:
+
+Invalid input:
+
+- Request:
+- Expected status:
+- Expected response shape:
+
+Not found:
+
+- Request:
+- Expected status:
+- Expected response shape:
+
+Conflict / edge case:
+
+- Request:
+- Expected status:
+- Expected response shape:
 
 ### Verification Result
+
 - [ ] Success path verified
 - [ ] Invalid input verified
 - [ ] Not found verified if applicable
@@ -204,7 +220,7 @@ Copy this block per endpoint as Phase 3 work progresses.
 
 ---
 
-## Step 5 — Persistence Verification Guidance
+## Step 5 - Persistence Verification Guidance
 
 For endpoints that create, update, or delete data, verification should include persistence checks.
 
@@ -227,7 +243,7 @@ If a flow changes DB state, it is not enough to only check the first HTTP respon
 
 ---
 
-## Step 6 — Error Handling Verification
+## Step 6 - Error Handling Verification
 
 For each relevant endpoint, verify backend error behavior is predictable.
 
@@ -251,7 +267,7 @@ Minimum expectations:
 
 ## Verification Evidence
 
-Before marking a Phase 3 item as complete, collect evidence such as:
+Before marking a backend Implementation Slice as complete, collect evidence such as:
 
 - exact request used
 - actual status code received
@@ -271,8 +287,9 @@ Acceptable evidence may include:
 
 ## Approval Checklist
 
-A Phase 3 backend change should not be approved unless all relevant items below are true:
+A backend change should not be approved unless all relevant items below are true:
 
+- [ ] Version Milestone, Work Item, and Implementation Slice are explicit
 - [ ] local services boot successfully
 - [ ] `/health` is healthy
 - [ ] changed endpoint(s) are testable without frontend
@@ -292,4 +309,4 @@ This document can later be extended with:
 - automated smoke test scripts
 - integration test mapping
 - endpoint-specific verification sections
-- Phase 4 integration checks
+- `v0.4.0` integration checks

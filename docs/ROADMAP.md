@@ -1,125 +1,92 @@
-# ROADMAP.md
+# ROADMAP
 
-## Project Roadmap
+This roadmap is a high-level Version Milestone sequence. It is not a task tracker.
 
-### Phase 1 — Foundations
-
-**Status:** Completed
-
-Establish the initial project foundation.
-
-Scope included:
-
-- monorepo/project structure
-- local development setup
-- core configuration
-- containerized services
-- basic service boot
-- health checks
-
-Outcome:
-
-- the project boots locally
-- core dependencies are connected
-- the base development environment is ready
+Use `docs/VERSION_PLAN.md` for active execution details, Work Items, and Implementation Slices.
 
 ---
 
-### Phase 2 — Backend Base
+## v0.1.0 - Backend Foundation and Verification Baseline
 
-**Status:** Completed
+Status: Completed baseline
 
-Build the backend base needed for feature work.
+Purpose:
 
-Scope included:
+- consolidate completed foundation work
+- establish local Docker-based development
+- establish health checks with DB and Redis dependency status
+- establish backend stabilization
+- establish verification-first backend workflow
+- establish API testing guidance
+- add Redis-backed vote endpoint rate limiting
 
-- backend structure and wiring
-- foundational backend setup
-- initial service integration
-- early implementation support for future feature phases
+Note:
 
-Outcome:
-
-- backend foundation is in place
-- Phase 3 feature work can proceed on a stable base
-
----
-
-### Phase 3 — Backend Features + Verification
-
-**Status:** In Progress
-
-Complete the approved Phase 3 backend scope and verify backend behavior without depending on the frontend.
-
-This phase is responsible for turning the backend into something that is not only implemented, but also testable and integration-ready.
-
-Scope includes:
-
-- Phase 3 backend feature implementation
-- request/response/error behavior stabilization
-- direct backend verification via HTTP-based checks
-- documentation synchronization
-- frontend-readiness of the API contract
-
-Key principle:
-
-- frontend work must not be the first place where backend correctness is discovered
-
-Expected outcome:
-
-- the required backend functionality exists
-- the backend can be verified without UI
-- the API contract is clear enough for frontend integration
-- project docs match real implementation
-
-Exit gate:
-
-- Phase 3 backend flows are reproducibly verifiable without frontend
-- error cases and persistence behavior are checked
-- API documentation is aligned with actual behavior
-- backend is ready for Phase 4 integration
+- This milestone does not mean all former backend feature/readiness goals are complete.
+- Remaining backend and API readiness work continues in later Version Milestones.
 
 ---
 
-### Phase 4 — Frontend Integration
+## v0.1.x - Stabilization and Docs Cleanup
 
-**Status:** Planned
+Status: Active planning area as needed
 
-Build the frontend against a verified backend contract.
+Purpose:
 
-Scope includes:
-
-- frontend implementation
-- connection to real backend endpoints
-- handling of loading, empty, success, and error states
-- integration fixes discovered during UI work
-
-Depends on:
-
-- Phase 3 verification gate being completed
-
-Expected outcome:
-
-- frontend works against real backend behavior rather than assumptions
-- integration work focuses on UI and product flow, not backend uncertainty
+- small corrections after the Version Milestone migration
+- docs alignment
+- local run verification notes
+- API testing guide polish
+- small bug fixes or contract clarifications that do not change major milestone scope
 
 ---
 
-### Phase 5 — End-to-End Hardening
+## v0.2.0 - Backend Feature Completion
 
-**Status:** Planned
+Status: Planned
 
-Stabilize the full product after backend and frontend are connected.
+Purpose:
 
-Scope includes:
+- complete remaining backend MVP endpoint/flow work
+- close remaining backend behavior gaps
+- preserve direct backend verification without frontend
+- keep API, DB, Redis, and SPEC behavior aligned
 
-- end-to-end validation
+---
+
+## v0.3.0 - API Contract Readiness
+
+Status: Planned
+
+Purpose:
+
+- stabilize request/response/error behavior before frontend integration
+- ensure `docs/API.md` and `docs/API_TESTING.md` are clear enough for frontend work
+- ensure success, failure, and persistence behavior is directly verifiable
+- remove backend ambiguity before frontend integration begins
+
+---
+
+## v0.4.0 - Frontend Integration
+
+Status: Planned
+
+Purpose:
+
+- connect the Next.js frontend to the verified backend
+- implement loading, empty, success, and error states against real API behavior
+- avoid frontend-invented backend fields or endpoints
+
+---
+
+## v0.5.0 - End-to-End MVP Hardening
+
+Status: Planned
+
+Purpose:
+
+- full-stack validation
 - bug fixing
 - UX polish
-- reliability improvements
-- release readiness work
-
-Expected outcome:
-
-- major flows are validated across the full stack
-- the product is stable enough for broader use and future deployment steps
+- release readiness
+- final MVP stabilization

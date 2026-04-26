@@ -1,24 +1,20 @@
-# AGENTS — Project Roles & Working Rules
+# AGENTS - Project Roles & Working Rules
 
 ## Canonical Rule
 
 All product and technical decisions must be aligned with the docs in `docs/`.
 
-If any code, prompt, plan, suggestion, or generated output conflicts with:
+Source-of-truth order:
 
-- `docs/SPEC.md`
-- `docs/API.md`
-- `docs/DB.md`
-- `docs/REDIS.md`
-- `docs/verification.md`
-- `docs/ROADMAP.md`
-- `docs/phases/TASKS.md`
-- `docs/phases/TASKS_PHASE2.md`
-- `docs/phases/TASKS_PHASE3.md`
+1. `docs/SPEC.md` defines product rules and business behavior.
+2. `docs/API.md`, `docs/DB.md`, `docs/REDIS.md`, and `docs/verification.md` define technical contracts and verification expectations.
+3. `docs/VERSION_PLAN.md` defines the active planning model and execution scope.
+4. `docs/ROADMAP.md` provides the high-level milestone sequence.
+5. `CHANGELOG.md` records completed historical changes.
 
-the docs win.
+If code, prompts, plans, suggestions, reviews, or generated output conflict with these docs, the docs win.
 
-If a behavior or rule changes, update the relevant docs first.
+If behavior changes, update the relevant docs first.
 
 ---
 
@@ -63,10 +59,9 @@ Use these documents as the main references:
 - `docs/DB.md`
 - `docs/REDIS.md`
 - `docs/verification.md`
+- `docs/VERSION_PLAN.md`
 - `docs/ROADMAP.md`
-- `docs/phases/TASKS.md`
-- `docs/phases/TASKS_PHASE2.md`
-- `docs/phases/TASKS_PHASE3.md`
+- `CHANGELOG.md`
 
 Usage:
 
@@ -75,10 +70,28 @@ Usage:
 - `docs/DB.md` = PostgreSQL schema/contracts
 - `docs/REDIS.md` = Redis key contracts and TTL rules
 - `docs/verification.md` = backend verification path without frontend
-- `docs/ROADMAP.md` = project phase sequence and exit logic
-- `docs/phases/TASKS.md` = MVP implementation order
-- `docs/phases/TASKS_PHASE2.md` = Phase 2 stabilization scope
-- `docs/phases/TASKS_PHASE3.md` = Phase 3 backend + verification scope
+- `docs/VERSION_PLAN.md` = active Version Milestone planning and execution scope
+- `docs/ROADMAP.md` = high-level Version Milestone roadmap
+- `CHANGELOG.md` = historical completed work summary
+
+---
+
+## Active Planning Model
+
+The active planning model is Version Milestones.
+
+Planning vocabulary:
+
+- Version Milestone: a version-level delivery target such as `v0.1.0`, `v0.2.0`, or `v0.3.0`.
+- Work Item: a meaningful backend, frontend, docs, or product objective inside a Version Milestone.
+- Implementation Slice: a small, Codex-executable unit of work under a Work Item.
+
+No coding work should begin unless the Version Milestone, Work Item, and Implementation Slice are explicit.
+Codex must not silently expand the active Implementation Slice.
+
+Legacy Phase/Sprint/Step files are not active planning references. Historical completed work is summarized in `docs/VERSION_PLAN.md` and `CHANGELOG.md`.
+
+Survey phase terminology such as `VOTING`, `RESULTS`, and `EXPIRED` remains product/domain terminology and must not be renamed as part of planning cleanup.
 
 ---
 
@@ -86,14 +99,14 @@ Usage:
 
 The default workflow is:
 
-1. Human + ChatGPT define scope
-2. Codex implements the approved scope
-3. Codex adds or updates tests when behavior changes
-4. Codex runs relevant tests/build checks and reports results
-5. Gemini performs the first review pass
-6. Codex applies needed fixes and re-runs relevant checks
-7. Claude performs selective deep review only for higher-risk changes
-8. Human decides approval, commit, and tag boundaries
+1. Human + ChatGPT define the Version Milestone, Work Item, and Implementation Slice.
+2. Codex implements the approved Implementation Slice only.
+3. Codex adds or updates tests when behavior changes.
+4. Codex runs relevant tests/build checks and reports results.
+5. Gemini performs the first review pass.
+6. Codex applies needed fixes and re-runs relevant checks.
+7. Claude performs selective deep review only for higher-risk changes.
+8. Human decides approval, commit, and tag boundaries.
 
 Claude is not required for every task.
 Use Claude selectively when the change is high-risk or ambiguous.
@@ -107,7 +120,7 @@ Use Claude selectively when the change is high-risk or ambiguous.
 Responsible for:
 
 - approving direction
-- deciding commit boundaries
+- deciding commit and tag boundaries
 - running final local checks when needed
 - accepting or rejecting changes
 
@@ -117,7 +130,7 @@ Responsible for:
 
 - planning
 - scope control
-- sprint/task shaping
+- Version Milestone / Work Item / Implementation Slice shaping
 - workflow design
 - prompt design
 - summarizing state and next steps
@@ -128,7 +141,7 @@ Default implementation tool.
 
 Responsibilities:
 
-- implement the approved scope only
+- implement the approved Implementation Slice only
 - keep changes small and reviewable
 - add or update tests when behavior changes
 - run relevant tests/build checks before handoff
@@ -157,6 +170,7 @@ Rules:
 - do not redesign the stack
 - do not bypass `docs/SPEC.md`
 - keep review grounded and implementation-aware
+- do not invent backend fields, endpoints, or product behavior
 
 ### Claude
 
@@ -173,7 +187,7 @@ Use mainly for:
 Rules:
 
 - do not act as the default implementer
-- review only the approved scope
+- review only the approved Version Milestone / Work Item / Implementation Slice
 - prefer minimal corrective feedback
 - avoid broad unsolicited rewrites
 
@@ -238,23 +252,26 @@ Before changing behavior:
 
 1. update `docs/SPEC.md` if the rule changes
 2. update related docs if needed (`API.md`, `DB.md`, `REDIS.md`, `verification.md`)
-3. implement the change
-4. run relevant tests/build/checks
-5. review the result against scope
-6. commit only after approval
+3. confirm the active Version Milestone, Work Item, and Implementation Slice
+4. implement the change
+5. run relevant tests/build/checks
+6. review the result against scope
+7. commit only after approval
 
 Do not let code become the source of truth before the docs.
 
 ---
 
-## Phase Awareness
+## Milestone Awareness
 
-Use the roadmap and phase task docs to stay aligned with current project state.
+Use `docs/VERSION_PLAN.md` and `docs/ROADMAP.md` to stay aligned with current project state.
 
 Important current direction:
 
-- Phase 1 is complete
-- Phase 2 is complete
-- Phase 3 focuses on backend features + verification
-- frontend integration belongs to Phase 4
-- backend correctness must be verifiable before frontend becomes the integration surface
+- `v0.1.0` is the completed backend foundation and verification baseline.
+- `v0.1.x` is for stabilization, docs cleanup, local run notes, API testing polish, and small clarifications.
+- `v0.2.0` focuses on remaining backend feature completion.
+- `v0.3.0` focuses on API contract readiness before frontend integration.
+- `v0.4.0` is frontend integration.
+- `v0.5.0` is end-to-end MVP hardening.
+- Backend correctness must be verifiable before frontend becomes the integration surface.

@@ -96,7 +96,7 @@ For easy `PUT /surveys/:id/vote` testing, create survey with vote-change enabled
 
 ```powershell
 $createSurveyBody = @{
-  title = "Sprint2 Vote Test Survey"
+  title = "Vote Change Test Survey"
   description = "Manual API testing"
   options = @("Option A", "Option B")
   visibility = "public"
@@ -224,7 +224,7 @@ Expected:
 
 ---
 
-## Sprint 2: Vote Rate Limiting Verification
+## Vote Rate Limiting Verification
 
 Scope: only vote endpoints
 
