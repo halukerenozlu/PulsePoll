@@ -2,7 +2,7 @@
 
 PulsePoll is a lightweight MVP survey platform built with a verification-first workflow.
 
-The project is private and documentation-driven.
+The project is public and documentation-driven.
 Core product and technical contracts live under `docs/`.
 
 ---
