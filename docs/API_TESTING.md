@@ -224,6 +224,206 @@ Expected:
 
 ---
 
+## Additional Endpoint Examples
+
+These examples cover endpoints that are useful during manual verification but are not part of the linear vote flow above.
+
+### Consent Accept
+
+```powershell
+curl.exe -i -X POST "$API/consent/accept" `
+  -c guest-cookies.txt
+```
+
+Expected:
+
+- `200 OK`
+- response body:
+
+```json
+{ "ok": true }
+```
+
+- response headers include a `Set-Cookie` for `guest_id`
+- cookie is saved to `guest-cookies.txt`
+
+You can inspect the saved cookie:
+
+```powershell
+Get-Content .\guest-cookies.txt
+```
+
+Expected:
+
+- a `guest_id` cookie value is present
+- the response `Set-Cookie` header includes `HttpOnly`
+
+### Auth Refresh
+
+Log in with a cookie jar so the refresh cookie is saved:
+
+```powershell
+$loginBody = @{
+  email = "tester1@example.com"
+  password = "StrongPass123!"
+} | ConvertTo-Json
+
+curl.exe -i -X POST "$API/auth/login" `
+  -H "Content-Type: application/json" `
+  -c auth-cookies.txt `
+  -d $loginBody
+```
+
+Refresh using that cookie:
+
+```powershell
+curl.exe -i -X POST "$API/auth/refresh" `
+  -b auth-cookies.txt `
+  -c auth-cookies.txt
+```
+
+Expected:
+
+- `200 OK`
+- response JSON includes a fresh `access_token`
+- refresh cookie remains available in `auth-cookies.txt`
+
+### Auth Logout
+
+```powershell
+curl.exe -i -X POST "$API/auth/logout" `
+  -b auth-cookies.txt
+```
+
+Expected:
+
+- `200 OK`
+- response body:
+
+```json
+{ "ok": true }
+```
+
+### Current User
+
+```powershell
+curl.exe -i -X GET "$API/me" `
+  -H "Authorization: Bearer $ACCESS_TOKEN"
+```
+
+Expected:
+
+- `200 OK`
+- response JSON contains the current user's `id`, `email`, and `display_name`
+
+### Feed
+
+Basic feed request:
+
+```powershell
+curl.exe -i "$API/feed"
+```
+
+Expected:
+
+- `200 OK`
+- response body has an `items` array
+- only public surveys appear
+
+Explicit newest-first sort:
+
+```powershell
+curl.exe -i "$API/feed?sort=new"
+```
+
+Expected:
+
+- `200 OK`
+- `items` are ordered by `created_at` descending
+
+Search by keyword:
+
+```powershell
+$KEYWORD = "Vote"
+curl.exe -i "$API/feed?sort=new&search=$KEYWORD"
+```
+
+Expected:
+
+- `200 OK`
+- `items` only include public surveys whose title or description matches the keyword
+
+### PIN Verify
+
+Create a private PIN survey:
+
+```powershell
+$pinSurveyBody = @{
+  title = "Private PIN Manual Test"
+  options = @("A", "B")
+  visibility = "private_pin"
+  access_pin = "1234"
+  results_mode = "open_live"
+  max_votes_per_user = 1
+  allow_vote_change_once = $false
+} | ConvertTo-Json
+
+$pinSurvey = Invoke-RestMethod -Method Post -Uri "$API/surveys" `
+  -Headers @{ Authorization = "Bearer $ACCESS_TOKEN" } `
+  -ContentType "application/json" `
+  -Body $pinSurveyBody
+
+$PIN_SURVEY_ID = $pinSurvey.id
+```
+
+Accept guest consent first if testing as a guest:
+
+```powershell
+curl.exe -i -X POST "$API/consent/accept" `
+  -c guest-cookies.txt
+```
+
+Successful PIN verification:
+
+```powershell
+$pinBody = @{ pin = "1234" } | ConvertTo-Json
+
+curl.exe -i -X POST "$API/surveys/$PIN_SURVEY_ID/pin/verify" `
+  -H "Content-Type: application/json" `
+  -b guest-cookies.txt `
+  -d $pinBody
+```
+
+Expected:
+
+- `200 OK`
+- response body:
+
+```json
+{ "ok": true }
+```
+
+- Redis receives a short-lived `pinok:survey:{surveyId}:guest:{guestId}` key for guest verification
+
+Wrong PIN:
+
+```powershell
+$wrongPinBody = @{ pin = "9999" } | ConvertTo-Json
+
+curl.exe -i -X POST "$API/surveys/$PIN_SURVEY_ID/pin/verify" `
+  -H "Content-Type: application/json" `
+  -b guest-cookies.txt `
+  -d $wrongPinBody
+```
+
+Expected:
+
+- `403 Forbidden`
+- error code `PIN_REQUIRED`
+- Redis increments `pinfail:survey:{surveyId}:guest:{guestId}` with a 15-minute TTL
+
+---
+
 ## Vote Rate Limiting Verification
 
 Scope: only vote endpoints
