@@ -11,8 +11,7 @@ Source-of-truth order:
 3. `docs/VERSION_PLAN.md` defines the active planning model and execution scope.
 4. `docs/ROADMAP.md` provides the high-level milestone sequence.
 5. `CHANGELOG.md` records completed historical changes.
-
-If code, prompts, plans, suggestions, reviews, or generated output conflict with these docs, the docs win.
+   If code, prompts, plans, suggestions, reviews, or generated output conflict with these docs, the docs win.
 
 If behavior changes, update the relevant docs first.
 
@@ -30,8 +29,7 @@ Prefer:
 - documented behavior
 - reproducible verification
 - low operational complexity
-
-Avoid:
+  Avoid:
 
 - speculative features
 - hidden product rule changes
@@ -62,8 +60,7 @@ Use these documents as the main references:
 - `docs/VERSION_PLAN.md`
 - `docs/ROADMAP.md`
 - `CHANGELOG.md`
-
-Usage:
+  Usage:
 
 - `docs/SPEC.md` = product rules and business behavior
 - `docs/API.md` = endpoint contracts
@@ -85,9 +82,8 @@ Planning vocabulary:
 - Version Milestone: a version-level delivery target such as `v0.1.0`, `v0.2.0`, or `v0.3.0`.
 - Work Item: a meaningful backend, frontend, docs, or product objective inside a Version Milestone.
 - Implementation Slice: a small, Codex-executable unit of work under a Work Item.
-
-No coding work should begin unless the Version Milestone, Work Item, and Implementation Slice are explicit.
-Codex must not silently expand the active Implementation Slice.
+  No coding work should begin unless the Version Milestone, Work Item, and Implementation Slice are explicit.
+  Codex must not silently expand the active Implementation Slice.
 
 Legacy Phase/Sprint/Step files are not active planning references. Historical completed work is summarized in `docs/VERSION_PLAN.md` and `CHANGELOG.md`.
 
@@ -99,17 +95,30 @@ Survey phase terminology such as `VOTING`, `RESULTS`, and `EXPIRED` remains prod
 
 The default workflow is:
 
-1. Human + ChatGPT define the Version Milestone, Work Item, and Implementation Slice.
-2. Codex implements the approved Implementation Slice only.
-3. Codex adds or updates tests when behavior changes.
-4. Codex runs relevant tests/build checks and reports results.
-5. Gemini performs the first review pass.
-6. Codex applies needed fixes and re-runs relevant checks.
-7. Claude performs selective deep review only for higher-risk changes.
-8. Human decides approval, commit, and tag boundaries.
+1. Claude reads current project state from docs and proposes the Version Milestone, Work Item, and Implementation Slice.
+2. Human accepts or adjusts the proposed slice before any coding begins.
+3. Codex implements the approved Implementation Slice only.
+4. Codex adds or updates tests when behavior changes.
+5. Codex runs relevant tests/build checks and reports results clearly.
+6. Gemini performs the first review pass.
+7. Codex applies needed fixes and re-runs relevant checks.
+8. Claude performs selective deep review for higher-risk changes.
+9. Human decides approval, commit, and tag boundaries.
+   Claude is not required for every task.
+   Use Claude selectively when the change is high-risk or ambiguous.
 
-Claude is not required for every task.
-Use Claude selectively when the change is high-risk or ambiguous.
+### When Claude writes code (critical fix path)
+
+When a change is security-sensitive or high-risk and Claude writes the fix directly:
+
+- Small surgical fix: Human reviews and approves directly.
+- Larger change: Gemini performs optional first-pass review for readability, then Human approves.
+- Codex is not involved in reviewing Claude's implementation output.
+
+### When Gemini writes code
+
+Gemini may write code for frontend tasks when the Human explicitly requests it.
+Gemini does not write backend, auth, migration, or security-sensitive code.
 
 ---
 
@@ -120,20 +129,40 @@ Use Claude selectively when the change is high-risk or ambiguous.
 Responsible for:
 
 - approving direction
+- accepting or rejecting the proposed Implementation Slice before coding begins
 - deciding commit and tag boundaries
 - running final local checks when needed
-- accepting or rejecting changes
+- explicitly requesting Claude or Gemini to write code when needed
 
-### ChatGPT
+### Claude
 
-Responsible for:
+Planner, deep reviewer, and selective implementer.
 
-- planning
-- scope control
-- Version Milestone / Work Item / Implementation Slice shaping
-- workflow design
-- prompt design
-- summarizing state and next steps
+**As Planner:**
+
+- reads `docs/VERSION_PLAN.md`, `docs/SPEC.md`, `docs/API.md`, `docs/DB.md`, `docs/REDIS.md`, `docs/ROADMAP.md`, and `CHANGELOG.md` before proposing anything
+- proposes the Version Milestone, Work Item, and Implementation Slice
+- defines explicit in-scope and out-of-scope boundaries
+- waits for Human approval before Codex begins
+  **As Deep Reviewer:**
+
+- reviews higher-risk or ambiguous changes after Gemini's first pass
+- checks scope alignment, doc alignment, verification completeness, and test coverage
+- prefers minimal corrective feedback over rewrites
+- is especially valuable for auth/session, migrations, DB-sensitive changes, security-sensitive code, and complex backend refactors
+  **As Selective Implementer:**
+
+- writes code only when the Human explicitly requests it
+- applies Karpathy behavioral guidelines strictly (see `CLAUDE.md`)
+- touches only what is necessary to fix the identified issue
+- does not expand scope beyond the approved slice
+  Rules:
+
+- do not start planning without reading current docs state
+- do not invent product rules, API fields, or DB behavior
+- do not silently pick an interpretation when ambiguity exists
+- do not expand scope beyond the accepted Implementation Slice
+- do not act as the default implementer for every task
 
 ### Codex
 
@@ -146,8 +175,7 @@ Responsibilities:
 - add or update tests when behavior changes
 - run relevant tests/build checks before handoff
 - report what changed and what was verified
-
-Rules:
+  Rules:
 
 - do not invent new product rules
 - do not silently expand scope
@@ -161,35 +189,17 @@ Frontend/product-oriented reviewer and first-pass reviewer.
 Responsibilities:
 
 - review frontend structure, UX flow, and product clarity
-- review Codex output for maintainability and clarity
+- review Codex output for maintainability and readability
 - flag confusing API usage or awkward UI/backend coupling
 - suggest practical product improvements without changing scope casually
-
-Rules:
+- write frontend code only when the Human explicitly requests it
+  Rules:
 
 - do not redesign the stack
 - do not bypass `docs/SPEC.md`
-- keep review grounded and implementation-aware
 - do not invent backend fields, endpoints, or product behavior
-
-### Claude
-
-Selective deep reviewer.
-
-Use mainly for:
-
-- auth/session logic
-- migrations / DB-sensitive changes
-- security-sensitive code
-- complex backend refactors
-- higher-risk changes before approval
-
-Rules:
-
-- do not act as the default implementer
-- review only the approved Version Milestone / Work Item / Implementation Slice
-- prefer minimal corrective feedback
-- avoid broad unsolicited rewrites
+- do not write backend, auth, migration, or security-sensitive code
+- keep review grounded and implementation-aware
 
 ---
 
@@ -227,8 +237,7 @@ Before handoff, the implementer must:
 - run relevant tests
 - run relevant build/check commands
 - report results clearly
-
-If tests are not added for a behavior change, a reason must be stated explicitly.
+  If tests are not added for a behavior change, a reason must be stated explicitly.
 
 ---
 
@@ -257,8 +266,7 @@ Before changing behavior:
 5. run relevant tests/build/checks
 6. review the result against scope
 7. commit only after approval
-
-Do not let code become the source of truth before the docs.
+   Do not let code become the source of truth before the docs.
 
 ---
 

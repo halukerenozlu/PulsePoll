@@ -12,8 +12,7 @@ Core product and technical contracts live under `docs/`.
 - Current completed baseline: `v0.1.0` - Backend Foundation and Verification Baseline
 - Active planning model: Version Milestones
 - Next planning area: `v0.1.x` stabilization/docs cleanup or `v0.2.0` backend feature completion, depending on repo state
-
-Current focus:
+  Current focus:
 
 - keep backend behavior directly verifiable without frontend
 - keep API, DB, Redis, and product docs aligned
@@ -47,8 +46,7 @@ Primary references:
 - Ephemeral state / rate limiting: Redis
 - Frontend: Next.js
 - Infra: Docker Compose
-
-Additional notes:
+  Additional notes:
 
 - PostgreSQL stores persistent survey-related data.
 - Redis stores temporary voting, PIN, and rate-limit state.
@@ -67,8 +65,7 @@ docker compose -p pulsepoll up --build
 Health check:
 
 - `GET http://localhost:8080/health`
-
-Expected healthy shape:
+  Expected healthy shape:
 
 ```json
 {
@@ -87,8 +84,7 @@ Backend correctness must be verifiable without depending on the frontend.
 Use:
 
 - `docs/verification.md`
-
-This document defines:
+  This document defines:
 
 - local startup checks
 - health verification
@@ -102,16 +98,17 @@ This document defines:
 
 Default workflow:
 
-1. Human + ChatGPT define the Version Milestone, Work Item, and Implementation Slice.
-2. Codex implements the approved Implementation Slice.
-3. Codex adds or updates tests when behavior changes.
-4. Codex runs relevant tests/build checks.
-5. Gemini performs first-pass review.
-6. Codex applies needed fixes and re-runs checks.
-7. Claude performs selective deep review only for higher-risk work.
-8. Human decides approval, commit, and tag boundaries.
-
-Claude is not required for every task.
+1. Claude reads current project state from docs and proposes the Version Milestone, Work Item, and Implementation Slice.
+2. Human accepts or adjusts the proposed slice before any coding begins.
+3. Codex implements the approved Implementation Slice.
+4. Codex adds or updates tests when behavior changes.
+5. Codex runs relevant tests/build checks and reports results.
+6. Gemini performs first-pass review.
+7. Codex applies needed fixes and re-runs checks.
+8. Claude performs selective deep review for higher-risk changes.
+9. Human decides approval, commit, and tag boundaries.
+   Claude is not required for every task.
+   See `AGENTS.md` for full role definitions and the critical fix path when Claude writes code directly.
 
 ---
 

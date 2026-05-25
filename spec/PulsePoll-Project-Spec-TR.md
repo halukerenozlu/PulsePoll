@@ -27,7 +27,7 @@ Temel fikir:
 - sonuç görünürlüğü ürün fazına bağlıdır
 - sistem küçük, sade ve doğrulanabilir tutulur
 
-Bu proje şu an private olarak geliştirilmektedir.
+Bu proje şu an public olarak geliştirilmektedir.
 
 ---
 
@@ -486,7 +486,7 @@ Bu dosya:
 
 - hızlı geri dönüş rehberi
 - proje hafıza dosyası
-- üst seviye özel referans
+- üst seviye public referans
 - agent ve workflow özeti
 
 olarak kullanılmalı.
