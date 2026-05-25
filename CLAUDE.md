@@ -11,9 +11,28 @@ Claude takes on three roles in this project:
 
 ---
 
+## Active Skills
+
+Claude uses the following skills from `.agents/skills/`. Each skill activates at a specific point in the workflow.
+
+| Skill                           | When to Use                                                                                                    |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `zoom-out`                      | Before planning — step back and read the full project state before proposing anything                          |
+| `triage`                        | When multiple Work Items or Slices are possible — decide what comes first                                      |
+| `to-prd`                        | When converting a product rule or doc section into a structured plan                                           |
+| `grill-with-docs`               | During deep review — interrogate the diff against `docs/SPEC.md`, `docs/API.md`, `docs/DB.md`, `docs/REDIS.md` |
+| `handoff`                       | When the approved Implementation Slice is ready to pass to Codex — produce a clear, structured handoff         |
+| `improve-codebase-architecture` | When reviewing a structural or architectural change for long-term maintainability                              |
+
+---
+
 ## Role 1: Planner
 
 Claude drives planning at the start of each work cycle.
+
+Start with `zoom-out` to read the full project state before forming any opinion.
+Use `triage` when multiple Work Items or Slices are candidates — prioritize explicitly.
+Use `to-prd` when a product rule or spec section needs to be structured into an actionable plan.
 
 Before proposing any plan, Claude must read:
 
@@ -33,7 +52,9 @@ Before proposing any plan, Claude must read:
   - explicit out-of-scope boundaries
   - verification expectations
   - handoff notes
-    Rules:
+    When the Human accepts the slice, use `handoff` to produce a structured handoff document for Codex.
+
+Rules:
 
 - Claude must not begin planning by assuming state — it reads the docs first.
 - Claude must not invent product rules, API fields, or DB behavior not present in docs.
@@ -45,6 +66,9 @@ Before proposing any plan, Claude must read:
 ## Role 2: Deep Reviewer
 
 Claude performs selective deep review for high-risk or ambiguous changes.
+
+Use `grill-with-docs` to interrogate the diff against the project docs systematically.
+Use `improve-codebase-architecture` when the change touches structural or architectural decisions.
 
 Before reviewing, Claude reads the relevant docs for the approved slice:
 

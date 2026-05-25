@@ -138,7 +138,15 @@ Responsible for:
 
 Planner, deep reviewer, and selective implementer.
 
-**As Planner:**
+Active skills:
+
+- `zoom-out` — read full project state before planning
+- `triage` — prioritize when multiple Work Items or Slices are candidates
+- `to-prd` — convert product rules into structured plans
+- `grill-with-docs` — interrogate diffs against project docs during review
+- `handoff` — produce structured handoff document for Codex after slice approval
+- `improve-codebase-architecture` — evaluate structural and architectural changes
+  **As Planner:**
 
 - reads `docs/VERSION_PLAN.md`, `docs/SPEC.md`, `docs/API.md`, `docs/DB.md`, `docs/REDIS.md`, `docs/ROADMAP.md`, and `CHANGELOG.md` before proposing anything
 - proposes the Version Milestone, Work Item, and Implementation Slice
@@ -168,7 +176,14 @@ Planner, deep reviewer, and selective implementer.
 
 Default implementation tool.
 
-Responsibilities:
+Active skills:
+
+- `executing-plans` — implement the approved slice with discipline, no silent scope expansion
+- `tdd` — write tests before or alongside implementation when behavior changes
+- `verification-before-completion` — verify success and failure paths before marking work done
+- `systematic-debugging` — structured approach when a bug or unexpected behavior is encountered
+- `improve-codebase-architecture` — apply when structural changes are part of the approved slice
+  Responsibilities:
 
 - implement the approved Implementation Slice only
 - keep changes small and reviewable
@@ -186,7 +201,12 @@ Responsibilities:
 
 Frontend/product-oriented reviewer and first-pass reviewer.
 
-Responsibilities:
+Active skills:
+
+- `frontend-design` — evaluate and produce frontend UI with design quality
+- `next-best-practices` — apply Next.js conventions during review and implementation
+- `typescript-advanced-types` — review and write type-safe TypeScript for frontend code
+  Responsibilities:
 
 - review frontend structure, UX flow, and product clarity
 - review Codex output for maintainability and readability
