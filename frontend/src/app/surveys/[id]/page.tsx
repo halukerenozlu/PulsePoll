@@ -4,7 +4,7 @@ import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSurvey, useSurveyResults } from '@/hooks/useSurveys';
 import { useVote, useChangeVote, useVerifyPin, useAcceptConsent, useReportSurvey } from '@/hooks/useVoting';
-import type { SurveyPhase } from '@/types';
+import type { SurveyPhase, SurveyResults } from '@/types';
 
 function getTimeRemainingText(voteEndsAt: string) {
   const diffMs = new Date(voteEndsAt).getTime() - Date.now();
@@ -42,8 +42,15 @@ function PhaseBadge({ phase }: { phase: SurveyPhase }) {
   );
 }
 
-function ResultsSection({ id }: { id: string }) {
-  const { data: results, isLoading, isError } = useSurveyResults(id);
+function ResultsSection({
+  results,
+  isLoading,
+  isError,
+}: {
+  results?: SurveyResults;
+  isLoading: boolean;
+  isError: boolean;
+}) {
   
   if (isLoading) return <div className="mt-8 p-4 bg-gray-50 rounded-xl animate-pulse text-sm text-gray-500">Sonuçlar yükleniyor...</div>;
   if (isError || !results) return <div className="mt-8 p-4 bg-red-50 text-red-600 rounded-xl text-sm">Sonuçlar yüklenemedi.</div>;
@@ -75,6 +82,11 @@ export default function SurveyDetailPage({ params }: { params: Promise<{ id: str
   const { id } = use(params);
   
   const { data: survey, isLoading, isError } = useSurvey(id);
+  const {
+    data: results,
+    isLoading: isResultsLoading,
+    isError: isResultsError,
+  } = useSurveyResults(id);
   
   // Consent state
   const [hasConsent, setHasConsent] = useState(true);
@@ -361,7 +373,11 @@ export default function SurveyDetailPage({ params }: { params: Promise<{ id: str
         )}
 
         {survey.results_visible && !showPinForm && (
-          <ResultsSection id={survey.id} />
+          <ResultsSection
+            results={results}
+            isLoading={isResultsLoading}
+            isError={isResultsError}
+          />
         )}
       </div>
 

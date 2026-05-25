@@ -1,9 +1,14 @@
-// frontend/src/app/page.tsx
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
 export default function Home() {
-  return (
-    <main>
-      <h1>PulsePoll</h1>
-      <p>Frontend scaffold is ready.</p>
-    </main>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/feed');
+  }, [router]);
+
+  return null;
 }

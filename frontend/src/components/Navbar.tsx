@@ -45,13 +45,21 @@ export function Navbar() {
       </Link>
       <div className="flex gap-3 md:gap-4 items-center">
         {hasToken ? (
-          <button
-            onClick={handleLogout}
-            disabled={logoutMutation.isPending}
-            className="text-sm font-medium px-4 py-2 bg-gray-100 text-gray-900 hover:bg-gray-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {logoutMutation.isPending ? 'Çıkılıyor...' : 'Çıkış Yap'}
-          </button>
+          <>
+            <Link
+              href="/surveys/create"
+              className="text-sm font-medium px-4 py-2 bg-black text-white hover:bg-gray-800 rounded-md transition-colors"
+            >
+              Anket Oluştur
+            </Link>
+            <button
+              onClick={handleLogout}
+              disabled={logoutMutation.isPending}
+              className="text-sm font-medium px-4 py-2 bg-gray-100 text-gray-900 hover:bg-gray-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {logoutMutation.isPending ? 'Çıkılıyor...' : 'Çıkış Yap'}
+            </button>
+          </>
         ) : (
           <>
             <Link
