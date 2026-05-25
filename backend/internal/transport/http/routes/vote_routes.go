@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -127,6 +128,17 @@ func (h *voteHandler) verifyPIN(c *fiber.Ctx) error {
 		return err
 	}
 
+	ctx := context.Background()
+	if identity.IsGuest {
+		count, err := h.guestPINFailureCount(ctx, survey.ID, identity)
+		if err != nil {
+			return writeError(c, fiber.StatusInternalServerError, "INTERNAL_SERVER_ERROR", "failed to read pin failure count")
+		}
+		if count >= pinFailMaxAttempts {
+			return writeError(c, fiber.StatusTooManyRequests, "TOO_MANY_REQUESTS", "too many pin attempts")
+		}
+	}
+
 	var req pinVerifyRequest
 	if err := c.BodyParser(&req); err != nil {
 		return writeError(c, fiber.StatusBadRequest, "BAD_REQUEST", "invalid request body")
@@ -149,7 +161,6 @@ func (h *voteHandler) verifyPIN(c *fiber.Ctx) error {
 		return writeError(c, fiber.StatusForbidden, "PIN_REQUIRED", "invalid pin")
 	}
 
-	ctx := context.Background()
 	ttl := pinOKTTL(time.Now().UTC(), survey.VoteEndsAt)
 	if ttl <= 0 {
 		return writeError(c, fiber.StatusForbidden, "PHASE_NOT_VOTING", "voting not allowed in this phase")
@@ -512,6 +523,21 @@ func voteRateLimitKey(ip string) string {
 
 func (h *voteHandler) recordGuestPINFailure(ctx context.Context, surveyID string, identity voterIdentity) (int64, error) {
 	return pinFailScript.Run(ctx, h.redis, []string{pinFailKey(surveyID, identity)}, int64(pinFailTTLSeconds)).Int64()
+}
+
+func (h *voteHandler) guestPINFailureCount(ctx context.Context, surveyID string, identity voterIdentity) (int64, error) {
+	raw, err := h.redis.Get(ctx, pinFailKey(surveyID, identity)).Result()
+	if err != nil {
+		if errors.Is(err, goredis.Nil) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	count, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 func (h *voteHandler) enforceVoteRateLimit(c *fiber.Ctx) error {

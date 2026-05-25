@@ -308,3 +308,25 @@ Implementation Slices:
 - Confirm docs match shipped behavior.
 - Confirm local verification steps remain reproducible.
 - Prepare final MVP handoff notes and tag checkpoint.
+
+## v0.6.0 - Deployment Preparation
+
+Objectives:
+
+- Prepare for the production environment
+- Configure environment variables
+- Set up CORS for production
+- Configure PostgreSQL and Redis connections for production
+- Conduct a security review
+- Migration strategy
+- Frontend + backend deployment preparation
+
+## v1.0.0 - Public MVP Release
+
+Objective:
+
+- Validation of all MVP workflows in the deployment environment
+- Documentation cleanup
+- Launch for the first real users
+
+Translated with DeepL.com (free version)

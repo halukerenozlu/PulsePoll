@@ -26,6 +26,10 @@ TTL: 30 minutes (or until vote_ends_at, whichever is smaller)
 ## PIN brute-force protection
 pinfail:survey:{surveyId}:guest:{guestId} -> integer counter (INCR)
 TTL: 15 minutes
+Maximum allowed failed attempts: 5 (pinFailMaxAttempts)
+When the counter reaches 5, POST /surveys/{id}/pin/verify returns 429 TOO_MANY_REQUESTS.
+The counter is not reset on a correct PIN attempt.
+TTL resets to 15 minutes on each failed attempt.
 Note: keep this key contract for PRIVATE_PIN brute-force control. It is enforced when that protection is in scope.
 
 ## Rate limiting (simple)

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -71,6 +72,17 @@ func TestPINVerifyEndpointWrongPINIncrementsGuestPINFail(t *testing.T) {
 	if count != 1 {
 		t.Fatalf("expected pinfail counter 1, got %d", count)
 	}
+
+	ttl, err := redisClient.TTL(context.Background(), pinFailKey(surveyID, voterIdentity{
+		GuestID: guestID,
+		IsGuest: true,
+	})).Result()
+	if err != nil {
+		t.Fatalf("get pinfail ttl: %v", err)
+	}
+	if ttl <= 0 || ttl > time.Duration(pinFailTTLSeconds)*time.Second {
+		t.Fatalf("expected pinfail ttl within 15 minutes, got %s", ttl)
+	}
 }
 
 func TestPINVerifyEndpointBruteForceReturnsTooManyRequests(t *testing.T) {
@@ -102,6 +114,53 @@ func TestPINVerifyEndpointBruteForceReturnsTooManyRequests(t *testing.T) {
 	}
 	if body.Error.Code != "TOO_MANY_REQUESTS" {
 		t.Fatalf("expected TOO_MANY_REQUESTS code, got %q", body.Error.Code)
+	}
+}
+
+func TestPINVerifyEndpointWrongPINAtLimitReturnsTooManyRequestsBeforeCheckingPIN(t *testing.T) {
+	db := newPINVerifyTestDB(t)
+	redisClient := newPINVerifyTestRedis(t)
+	app := newPINVerifyTestApp(db, redisClient)
+
+	surveyID := createPINVerifySurvey(t, db, "1234")
+	guestID := "guest-at-limit-wrong"
+	setPINFailCount(t, redisClient, surveyID, guestID, pinFailMaxAttempts)
+
+	resp := pinVerifyJSONRequest(t, app, surveyID, guestID, `{"pin":"9999"}`)
+	defer resp.Body.Close()
+	if resp.StatusCode != fiber.StatusTooManyRequests {
+		t.Fatalf("expected status %d, got %d", fiber.StatusTooManyRequests, resp.StatusCode)
+	}
+	assertErrorCode(t, resp, "TOO_MANY_REQUESTS")
+
+	count := pinFailCount(t, redisClient, surveyID, guestID)
+	if count != pinFailMaxAttempts {
+		t.Fatalf("expected pinfail counter to remain %d, got %d", pinFailMaxAttempts, count)
+	}
+}
+
+func TestPINVerifyEndpointCorrectPINAtLimitReturnsTooManyRequestsBeforeCheckingPIN(t *testing.T) {
+	db := newPINVerifyTestDB(t)
+	redisClient := newPINVerifyTestRedis(t)
+	app := newPINVerifyTestApp(db, redisClient)
+
+	surveyID := createPINVerifySurvey(t, db, "1234")
+	guestID := "guest-at-limit-correct"
+	setPINFailCount(t, redisClient, surveyID, guestID, pinFailMaxAttempts)
+
+	resp := pinVerifyJSONRequest(t, app, surveyID, guestID, `{"pin":"1234"}`)
+	defer resp.Body.Close()
+	if resp.StatusCode != fiber.StatusTooManyRequests {
+		t.Fatalf("expected status %d, got %d", fiber.StatusTooManyRequests, resp.StatusCode)
+	}
+	assertErrorCode(t, resp, "TOO_MANY_REQUESTS")
+
+	_, err := redisClient.Get(context.Background(), pinOKKey(surveyID, voterIdentity{
+		GuestID: guestID,
+		IsGuest: true,
+	})).Result()
+	if !errors.Is(err, goredis.Nil) {
+		t.Fatalf("expected pinok key not to be set, got err=%v", err)
 	}
 }
 
@@ -225,4 +284,16 @@ func pinFailCount(t *testing.T, redisClient *goredis.Client, surveyID string, gu
 		t.Fatalf("parse pinfail counter: %v", err)
 	}
 	return count
+}
+
+func setPINFailCount(t *testing.T, redisClient *goredis.Client, surveyID string, guestID string, count int64) {
+	t.Helper()
+
+	err := redisClient.Set(context.Background(), pinFailKey(surveyID, voterIdentity{
+		GuestID: guestID,
+		IsGuest: true,
+	}), strconv.FormatInt(count, 10), time.Duration(pinFailTTLSeconds)*time.Second).Err()
+	if err != nil {
+		t.Fatalf("set pinfail counter: %v", err)
+	}
 }

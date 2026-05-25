@@ -560,3 +560,157 @@ curl.exe -i -X POST "$API/surveys/$POST_RATE_SURVEY_ID/vote" `
 Expected:
 
 - request is no longer blocked by the previous 60-second rate-limit window
+
+---
+
+## Frontend Integration Reference
+
+### POST /auth/register
+
+```js
+const res = await fetch('http://localhost:8080/api/v1/auth/register', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: 'user@example.com',
+    password: 'StrongPass123!',
+    display_name: 'user'
+  }),
+  credentials: 'include'
+});
+const data = await res.json();
+// data.access_token, data.user.id
+```
+
+### POST /auth/login
+
+```js
+const res = await fetch('http://localhost:8080/api/v1/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: 'user@example.com',
+    password: 'StrongPass123!'
+  }),
+  credentials: 'include'
+});
+const data = await res.json();
+// data.access_token, data.user.id
+```
+
+### GET /me
+
+```js
+const res = await fetch('http://localhost:8080/api/v1/me', {
+  headers: { Authorization: `Bearer ${accessToken}` }
+});
+const data = await res.json();
+// data.id, data.email, data.display_name
+```
+
+### POST /surveys
+
+```js
+const res = await fetch('http://localhost:8080/api/v1/surveys', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    title: 'Frontend Test Survey',
+    options: ['Option A', 'Option B'],
+    visibility: 'public',
+    results_mode: 'open_live'
+  })
+});
+const data = await res.json();
+// data.id, data.options
+```
+
+### GET /surveys/{id}
+
+```js
+const res = await fetch(`http://localhost:8080/api/v1/surveys/${surveyId}`);
+const data = await res.json();
+// data.id, data.options, data.phase
+```
+
+### GET /feed
+
+```js
+const res = await fetch('http://localhost:8080/api/v1/feed?sort=new&visibility=public');
+const data = await res.json();
+// data.items
+```
+
+### POST /surveys/{id}/vote
+
+```js
+const res = await fetch(`http://localhost:8080/api/v1/surveys/${surveyId}/vote`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    option_id: optionId
+  }),
+  credentials: 'include'
+});
+const data = await res.json();
+// data.ok
+```
+
+### PUT /surveys/{id}/vote
+
+```js
+const res = await fetch(`http://localhost:8080/api/v1/surveys/${surveyId}/vote`, {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    new_option_id: newOptionId
+  }),
+  credentials: 'include'
+});
+const data = await res.json();
+// data.ok
+```
+
+### GET /surveys/{id}/results
+
+```js
+const res = await fetch(`http://localhost:8080/api/v1/surveys/${surveyId}/results`);
+const data = await res.json();
+// data.total_votes, data.options
+```
+
+### POST /consent/accept
+
+```js
+const res = await fetch('http://localhost:8080/api/v1/consent/accept', {
+  method: 'POST',
+  credentials: 'include'
+});
+const data = await res.json();
+// data.ok
+```
+
+### POST /surveys/{id}/pin/verify
+
+```js
+const res = await fetch(`http://localhost:8080/api/v1/surveys/${surveyId}/pin/verify`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    pin: '1234'
+  }),
+  credentials: 'include'
+});
+const data = await res.json();
+// data.ok
+```
+
+## Known Limitations (v0.3.0)
+
+1. POST /feedback is not implemented. No backend route is registered.
+2. pinfail rate limiting blocks after 5 failed PIN attempts per guest. The counter is not reset on correct PIN. TTL is 15 minutes.
+3. Feed endpoint does not return options. Use GET /surveys/{id} for full detail.
+4. Timestamps follow RFC3339 format (e.g. 2026-05-25T00:00:00Z).
