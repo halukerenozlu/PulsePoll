@@ -6,7 +6,7 @@ PulsePoll is an MVP project, but security-sensitive behavior should still be han
 
 Please do not report security vulnerabilities in public issues, pull requests, or discussions.
 
-Report suspected vulnerabilities privately to the project maintainer through an appropriate private contact channel.
+Report suspected vulnerabilities privately to the maintainer via GitHub: @halukerenozlu
 
 When reporting, include as much detail as is safe to share:
 
