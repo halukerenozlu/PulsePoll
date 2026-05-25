@@ -74,3 +74,19 @@ export type SurveyResults = {
   total_votes: number;
   options: SurveyResultOption[];
 };
+
+export type VoteResponse = {
+  ok: boolean;
+};
+
+export type PinVerifyResponse = {
+  ok: boolean;
+};
+
+export type ConsentResponse = {
+  ok: boolean;
+};
+
+export type ReportResponse = {
+  ok: boolean;
+};
