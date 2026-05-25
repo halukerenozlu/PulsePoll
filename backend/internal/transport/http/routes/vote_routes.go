@@ -25,6 +25,8 @@ type voteHandler struct {
 const (
 	voteRateLimitTTLSeconds = 60
 	voteRateLimitMaxHits    = 30
+	pinFailTTLSeconds       = 15 * 60
+	pinFailMaxAttempts      = 5
 )
 
 var voteRateLimitScript = goredis.NewScript(`
@@ -32,6 +34,12 @@ local current = redis.call("INCR", KEYS[1])
 if current == 1 then
   redis.call("EXPIRE", KEYS[1], ARGV[1])
 end
+return current
+`)
+
+var pinFailScript = goredis.NewScript(`
+local current = redis.call("INCR", KEYS[1])
+redis.call("EXPIRE", KEYS[1], ARGV[1])
 return current
 `)
 
@@ -129,6 +137,15 @@ func (h *voteHandler) verifyPIN(c *fiber.Ctx) error {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(*survey.AccessPinHash), []byte(req.PIN)); err != nil {
+		if identity.IsGuest {
+			count, err := h.recordGuestPINFailure(context.Background(), survey.ID, identity)
+			if err != nil {
+				return writeError(c, fiber.StatusInternalServerError, "INTERNAL_SERVER_ERROR", "failed to record pin failure")
+			}
+			if count > pinFailMaxAttempts {
+				return writeError(c, fiber.StatusTooManyRequests, "TOO_MANY_REQUESTS", "too many pin attempts")
+			}
+		}
 		return writeError(c, fiber.StatusForbidden, "PIN_REQUIRED", "invalid pin")
 	}
 
@@ -485,8 +502,16 @@ func pinOKKey(surveyID string, identity voterIdentity) string {
 	return fmt.Sprintf("pinok:survey:%s:user:%s", surveyID, identity.UserID)
 }
 
+func pinFailKey(surveyID string, identity voterIdentity) string {
+	return fmt.Sprintf("pinfail:survey:%s:guest:%s", surveyID, identity.GuestID)
+}
+
 func voteRateLimitKey(ip string) string {
 	return fmt.Sprintf("rl:ip:%s:vote", ip)
+}
+
+func (h *voteHandler) recordGuestPINFailure(ctx context.Context, surveyID string, identity voterIdentity) (int64, error) {
+	return pinFailScript.Run(ctx, h.redis, []string{pinFailKey(surveyID, identity)}, int64(pinFailTTLSeconds)).Int64()
 }
 
 func (h *voteHandler) enforceVoteRateLimit(c *fiber.Ctx) error {
