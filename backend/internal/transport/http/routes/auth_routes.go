@@ -226,9 +226,11 @@ func (h *authHandler) logout(c *fiber.Ctx) error {
 	if refreshToken != "" {
 		hash := hashToken(refreshToken)
 		now := time.Now().UTC()
-		_ = h.db.Model(&authSession{}).
+		if err := h.db.Model(&authSession{}).
 			Where("refresh_token_hash = ? AND revoked_at IS NULL", hash).
-			Update("revoked_at", now).Error
+			Update("revoked_at", now).Error; err != nil {
+			return writeError(c, fiber.StatusInternalServerError, "INTERNAL_SERVER_ERROR", "failed to revoke session")
+		}
 	}
 
 	clearRefreshCookie(c, h.cfg)
